@@ -1,0 +1,90 @@
+<resources>
+    <string name="app_name">Transmetano AR</string>
+
+    // ArcGIS Endpoints
+    <string name="portal_url">https://www.arcgis.com</string>
+    <string name="base_url">https://services6.arcgis.com/1I1bBgw3xTxrPoS4/arcgis/</string>
+    <string name="elevation_url">https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer</string>
+
+    // Default Layer
+    <string name="layer_dots">DotTubes</string>
+    <string name="layer_name">Libro de tubos</string>
+    <string name="layer_type">FeatureServer</string>
+    <string name="layer_url">https://services6.arcgis.com/1I1bBgw3xTxrPoS4/arcgis/rest/services/Layers_MapTF2_D/FeatureServer</string>
+
+    // ArcGIS Lib
+    <string name="navigate_ar_permission_denied">¡Se deben otorgar permisos de cámara para el correcto funcionamiento!</string>
+
+    // Login Activity
+    <string name="login_title">Inicio de sesión</string>
+    <string name="login_user">Usuario</string>
+    <string name="login_password">Contraseña</string>
+    <string name="login_sign_in">Ingresar</string>
+    <string name="login_forgot_pass">¿Olvidaste tu contraseña? toca aquí</string>
+    <string name="login_remember">Recordar mis datos?</string>
+    <string name="login_invalid_username">Usuario invalido</string>
+    <string name="login_invalid_password">La contraseña es muy corta</string>
+    <string name="login_loading">Cargando...</string>
+    <string name="login_failed">Usuario o contraseña incorrectos</string>
+    <string name="login_error">Error de logueo</string>
+    <string name="token_error">Error token</string>
+    <string name="login_forgot">Recuerda que tu contraseña y usuario son los utilizados en la web de ArcGIS</string>
+
+    // Not longer necessary
+    <string name="secret_u">ContratistaGIS2</string>
+    <string name="secret_p">Transmetano2022+</string>
+
+    // ArActivity
+    <string name="ar_max_dist">Distancia visual: 200 mts</string>
+    <string name="ar_max_dist_1">Distancia máxima: </string>
+    <string name="ar_max_dist_2"> mts</string>
+    <string name="ar_see_map">Ver Mapa</string>
+
+    // MapActivities
+    <string name="map_title">MapActivity</string>
+
+    // Menu Fragment
+    <string name="menu_source">Fuente de datos</string>
+    <string name="menu_config">Ajustes</string>
+    <string name="menu_about">Acerca de</string>
+    <string name="menu_logout">Cerrar sesión</string>
+
+    // Config Fragment
+    <string name="config_title">Ajustes</string>
+    <string name="config_dist_title">Distancia máxima</string>
+    <string name="config_dist_body">La distancia máxima desde tu ubicación para la cual se mostrarán los datos.</string>
+    <string name="config_dis_value">500</string>
+    <string name="config_calibrate">Calibrar</string>
+    <string name="config_altitude">Altura</string>
+    <string name="config_heading">Dirección</string>
+    <string name="config_base_surface">Superficie</string>
+
+    // About Fragment
+    <string name="about_title">Acerca de</string>
+    <string name="about_version">Versión 1.0.0</string>
+    <string name="about_create_by">Creado por \n Innovati</string>
+
+    // Source Fragment
+    <string name="source_title">Fuente de datos</string>
+    <string name="source_body">Selecciona una fuente de datos:</string>
+    <string name="config_alert">La distancia maxima debe ser mayor a 10 metro y menor a 100000 metros</string>
+    <string name="source_update_successfull">Se ha actualizado correctamente la fuente de datos</string>
+
+    // Update Data
+    <string name="feature_update_successfull">Se ha actualizado de forma correcta</string>
+    <string name="feature_update_fail">La actualización ha fallado</string>
+    <string name="key_observation">Observaciones</string>
+
+    // Offline
+    <string name="preplanned_offline_map_dir">/preplanned_offline_map</string>
+    <string name="geodatabase_offline_map_dir">/geodatabase_offline_map</string>
+    <string name="key_words">MapTF2</string>
+    <string name="key_pre_planned">_MapArea</string>
+    <string name="key_layers">Layers_</string>
+
+    // Progress Dialog
+    <string name="title">Descarga de area preplaniadas</string>
+    <string name="message">Descargando el area solicitada...</string>
+    <string name="cancel">Cancelar</string>
+
+</resources>

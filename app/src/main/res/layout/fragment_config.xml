@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/holo_gray"
+    android:padding="12dp"
+    tools:context=".Fragments.ConfigFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/calibrationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/config_title"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:drawableStart="@drawable/ly_eye"
+            android:drawablePadding="12dp"
+            android:text="@string/config_dist_title"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvDisText"
+            android:layout_width="260dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:text="@string/config_dist_body"
+            android:textColor="@android:color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvDistance" />
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/etDistance"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/config_dis_value"
+            android:inputType="numberDecimal"
+            android:selectAllOnFocus="true"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/tvDisText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tvDisText"
+            app:layout_constraintTop_toTopOf="@+id/tvDisText" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvCalibrate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:drawableStart="@drawable/ly_config"
+            android:drawablePadding="12dp"
+            android:text="@string/config_calibrate"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvDisText" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvAltitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/config_altitude"
+            android:textColor="@android:color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvCalibrate" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvHeading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/config_heading"
+            android:textColor="@android:color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvAltitude" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tvBaseSurface"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/config_base_surface"
+            android:textColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvHeading" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sAltitude"
+            android:layout_width="280dp"
+            android:layout_height="42dp"
+            android:layout_marginEnd="24dp"
+            android:stepSize="1"
+            android:value="0"
+            android:valueFrom="-50"
+            android:valueTo="50"
+            app:layout_constraintBottom_toBottomOf="@+id/tvAltitude"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvAltitude" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sHeading"
+            android:layout_width="280dp"
+            android:layout_height="42dp"
+            android:layout_marginEnd="24dp"
+            android:stepSize="1"
+            android:value="0"
+            android:valueFrom="0"
+            android:valueTo="360"
+            app:layout_constraintBottom_toBottomOf="@+id/tvHeading"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvHeading" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sBaseSurface"
+            android:layout_width="280dp"
+            android:layout_height="42dp"
+            android:layout_marginEnd="24dp"
+            android:stepSize="0.1"
+            android:value="0"
+            android:valueFrom="0"
+            android:valueTo="1"
+            app:layout_constraintBottom_toBottomOf="@+id/tvBaseSurface"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvBaseSurface" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

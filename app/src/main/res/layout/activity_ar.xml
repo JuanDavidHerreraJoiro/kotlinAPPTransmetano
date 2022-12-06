@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/transitionsContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/secondary"
+    tools:context="com.transmetano.ar.activities.ArActivity">
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar" />
+
+    <com.esri.arcgisruntime.toolkit.ar.ArcGISArView
+        android:id="@+id/arView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:renderVideoFeed="true" />
+
+    <com.transmetano.ar.arOffline.arview.ARView
+        android:id="@+id/ar_label_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/ivArrow"
+        android:layout_width="41dp"
+        android:layout_height="41dp"
+        android:background="@drawable/arrow"
+        app:layout_constraintBottom_toBottomOf="@+id/ivCompass"
+        app:layout_constraintEnd_toEndOf="@+id/ivCompass"
+        app:layout_constraintStart_toStartOf="@+id/ivCompass"
+        app:layout_constraintTop_toTopOf="@+id/ivCompass" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/ivCompass"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/nwes"
+        android:tooltipText="Send an email"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tvRange"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ar_max_dist"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/sRange"
+        app:layout_constraintEnd_toEndOf="@+id/sRange"
+        app:layout_constraintStart_toStartOf="@+id/sRange" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/sRange"
+        android:layout_width="280dp"
+        android:layout_height="42dp"
+        android:layout_marginBottom="24dp"
+        android:stepSize="1"
+        android:value="200"
+        android:valueFrom="1"
+        android:valueTo="500"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/ivCompass" />
+
+    <FrameLayout
+        android:id="@+id/mediaFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
