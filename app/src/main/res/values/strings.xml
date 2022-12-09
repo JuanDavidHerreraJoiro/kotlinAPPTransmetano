@@ -81,6 +81,7 @@
     <string name="key_words">MapTF2</string>
     <string name="key_pre_planned">_MapArea</string>
     <string name="key_layers">Layers_</string>
+    <string name="sync">sincronizar</string>
 
     // Progress Dialog
     <string name="title">Descarga de area preplaniadas</string>

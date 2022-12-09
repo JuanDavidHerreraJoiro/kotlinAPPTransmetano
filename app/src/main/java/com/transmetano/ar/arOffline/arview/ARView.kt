@@ -60,14 +60,16 @@ internal class ARView : View {
 
                 val endPoint = arPoints[index]
 
+                val tubeSize= 15f
+
                 val left = startPoint.positionX
-                val top = startPoint.positionY - 20f
+                val top = startPoint.positionY - tubeSize
                 val right = endPoint.positionX
-                val bottom = endPoint.positionY + 20f
+                val bottom = endPoint.positionY + tubeSize
 
                 rectanglePaint.apply {
                     shader = LinearGradient(
-                        right / 2, top - 10f, right / 2, arPoints[0].positionY,
+                        right / 2, top - tubeSize/2, right / 2, arPoints[0].positionY,
                         Color.GRAY, context.getColor(R.color.white), TileMode.MIRROR
                     )
                 }
@@ -86,8 +88,9 @@ internal class ARView : View {
 
     private fun drawArLabel(canvas: Canvas, arLabelProperties: ARLabelProperties) {
 
-        val labelText = "Punto a \n ${arLabelProperties.distance} m"
-        val circleSize = (2000 / arLabelProperties.distance).toFloat()
+        //val labelText = "Punto a \n ${arLabelProperties.distance} m"
+        val labelText =""
+        val circleSize = (500 / arLabelProperties.distance).toFloat()
 
         circlePaint.apply {
             shader = RadialGradient(

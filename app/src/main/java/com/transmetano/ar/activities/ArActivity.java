@@ -18,8 +18,10 @@ package com.transmetano.ar.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -31,12 +33,15 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.hotspot2.pps.Credential;
 import android.os.Bundle;
 import android.transition.TransitionManager;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
@@ -56,6 +61,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.data.Feature;
 import com.esri.arcgisruntime.data.FeatureQueryResult;
+import com.esri.arcgisruntime.data.FeatureTable;
 import com.esri.arcgisruntime.data.QueryParameters;
 import com.esri.arcgisruntime.data.ServiceFeatureTable;
 import com.esri.arcgisruntime.geometry.Point;
@@ -72,9 +78,12 @@ import com.esri.arcgisruntime.mapping.BasemapStyle;
 import com.esri.arcgisruntime.mapping.NavigationConstraint;
 import com.esri.arcgisruntime.mapping.Surface;
 import com.esri.arcgisruntime.mapping.view.Camera;
+import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.LayerSceneProperties;
+import com.esri.arcgisruntime.portal.Portal;
+import com.esri.arcgisruntime.portal.PortalItem;
 import com.esri.arcgisruntime.security.UserCredential;
 import com.esri.arcgisruntime.symbology.MultilayerPolylineSymbol;
 import com.esri.arcgisruntime.symbology.SceneSymbol;
@@ -88,7 +97,6 @@ import com.esri.arcgisruntime.toolkit.ar.ArcGISArView;
 import com.google.android.material.slider.Slider;
 import com.google.gson.Gson;
 import com.tooltip.Tooltip;
-import com.transmetano.ar.R;
 import com.transmetano.ar.arOffline.arview.ARView;
 import com.transmetano.ar.arOffline.compass.CompassData;
 import com.transmetano.ar.arOffline.compass.CompassRepository;
@@ -101,18 +109,27 @@ import com.transmetano.ar.fragments.MenuFragment;
 import com.transmetano.ar.fragments.SourceFragment;
 import com.transmetano.ar.objects.CurrentLayer;
 import com.transmetano.ar.objects.DotLocation;
+import com.transmetano.ar.objects.TokenResponse;
+import com.transmetano.ar.R;
+import com.transmetano.ar.retrofit.ApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
-public class ArActivity extends AppCompatActivity
-        implements SensorEventListener, LocationListener, MenuFragment.FrCallback {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class ArActivity extends AppCompatActivity implements SensorEventListener, LocationListener, MenuFragment.FrCallback {
 
     private final String PREFS_OFFLINE = "OfflinePreferences";
     private final String VALOR_OFFLINE = "ValorOffline";
@@ -124,12 +141,14 @@ public class ArActivity extends AppCompatActivity
     // Preferences
     private static final String PREFS = "LayerPreferences";
     private static final String LAYER_PREFS = "LastLayer";
-    private String name_layer = "Layers_MapTF2_D";
+    private String name_layer = "";
 
     // token
     private static final String PREFS_TOKEN = "LoginPreferences";
     private static final String USER_PREFS = "username";
     private static final String PASS_PREFS = "password";
+    private static final String EXPIRES_TOKEN_PREFS = "expiresToken";
+
 
     // Arcgis elements
     private ARView arLabelView;
@@ -152,7 +171,7 @@ public class ArActivity extends AppCompatActivity
     private ImageView ivCompass;
     private TextView tvRange;
     private Slider sRange;
-    private String state = "EN LINEA";
+    private String state = "SIN CONEXION";
 
     private MenuItem toolbarState;
     private MenuItem toolbarRefresh;
@@ -171,8 +190,8 @@ public class ArActivity extends AppCompatActivity
     private OrientationProvider orientationProvider;
 
     // Create Line
-    private DotLocation[] dotLocations;
-
+    private DotLocation[] dotTubes;
+    //private ArcGISMap map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -181,6 +200,7 @@ public class ArActivity extends AppCompatActivity
 
         bindViews();
         loadDots();
+
         setCompassSensor();
     }
 
@@ -211,8 +231,9 @@ public class ArActivity extends AppCompatActivity
             Intent intent = new Intent(this, MapActivity.class);
             //Log.d("ERROR 1", String.valueOf(dotTubes.));
             intent.putExtra("name_layer", name_layer);
-            intent.putExtra(getString(R.string.layer_dots), dotLocations);
+            intent.putExtra(getString(R.string.layer_dots), dotTubes);
             startActivity(intent);
+            finish();
         });
     }
 
@@ -309,7 +330,7 @@ public class ArActivity extends AppCompatActivity
                                     point.getLon(), point.getLat(), point.getAlt()));
                         }
                         compassRepository.setDestinationsLocation(desLocations);
-                        dotLocations = tubeList.toArray(new DotLocation[0]);
+                        dotTubes = tubeList.toArray(new DotLocation[0]);
 
                         if (tubeOverlay == null) {
                             requestPermissions();
@@ -327,6 +348,8 @@ public class ArActivity extends AppCompatActivity
             Log.e(TAG, "Error in FeatureQueryResult: " + e.getMessage());
         }
 
+
+
         offline_AR();
 
     }
@@ -334,24 +357,37 @@ public class ArActivity extends AppCompatActivity
     private void offline_AR() {
         SharedPreferences prefslayers = getSharedPreferences(PREFS, MODE_PRIVATE);
         try {
+            name_layer = String.valueOf(new JSONObject(prefslayers.getString(LAYER_PREFS, "")).get("name"));
+            SharedPreferences prefsoffline = getSharedPreferences(PREFS_OFFLINE+"_"+name_layer, MODE_PRIVATE);
 
-            name_layer = String.valueOf(new JSONObject(prefslayers.getString(LAYER_PREFS, ""))
-                    .get("name"));
-            SharedPreferences prefsoffline = getSharedPreferences(PREFS_OFFLINE + "_" + name_layer, MODE_PRIVATE);
-
-            if (Objects.equals(state, "SIN CONEXION") && prefsoffline.getAll().size() > 0) {
-
+            if (state=="SIN CONEXION" && prefsoffline.getAll().size()>0){
                 ArrayList<DotLocation> tubeList = new ArrayList<>();
                 try {
                     int num = prefsoffline.getAll().size();
-                    String value_json;
-                    for (int i = 1; i <= num; i++) {
-                        valor_feature = prefsoffline.getString(VALOR_OFFLINE + "_" + i, "");
+
+                    String value_json="";
+                    for (int i=1; i<=num; i++){
+                        valor_feature = prefsoffline.getString(VALOR_OFFLINE+"_"+String.valueOf(i), "");
                         value_json = String.valueOf(new JSONObject(valor_feature));
-                        tubeList.add(new Gson().fromJson(value_json, DotLocation.class));
+
+                        tubeList.add(new Gson().fromJson(
+                                value_json,
+                                DotLocation.class));
                     }
 
-                    dotLocations = tubeList.toArray(new DotLocation[0]);
+                    ArrayList<DotLocation> desLocations = new ArrayList<>();
+                    for (DotLocation point : tubeList) {
+                       desLocations.add(new DotLocation(
+                                point.getLon(), point.getLat(), point.getAlt()));
+                    }
+
+                    if (compassRepository == null ){
+                        compassRepository = new CompassRepository();
+                    }
+
+                    compassRepository.setDestinationsLocation(desLocations);
+                    dotTubes = tubeList.toArray(new DotLocation[0]);
+
                     if (tubeOverlay == null) {
                         requestPermissions();
                     } else {
@@ -383,7 +419,7 @@ public class ArActivity extends AppCompatActivity
         toolbarClose.setVisible(true);
         mediaFragment.setVisibility(View.VISIBLE);
         ft = getSupportFragmentManager().beginTransaction();
-        menuFragment = MenuFragment.newInstance();
+        menuFragment = menuFragment.newInstance();
         ft.replace(R.id.mediaFragment, menuFragment);
         ft.commit();
     }
@@ -391,7 +427,7 @@ public class ArActivity extends AppCompatActivity
     protected void displayConfig() {
         TransitionManager.beginDelayedTransition(transitionsContainer);
         ft = getSupportFragmentManager().beginTransaction();
-        configFragment = ConfigFragment.newInstance();
+        configFragment = configFragment.newInstance();
         ft.replace(R.id.mediaFragment, configFragment);
         ft.commit();
     }
@@ -399,7 +435,10 @@ public class ArActivity extends AppCompatActivity
     protected void displaySource() {
         TransitionManager.beginDelayedTransition(transitionsContainer);
         ft = getSupportFragmentManager().beginTransaction();
-        sourceFragment = SourceFragment.newInstance();
+        sourceFragment = sourceFragment.newInstance();
+        toolbarClose.setVisible(true);
+        //sourceFragment.mGeodatabase = ;
+        //sourceFragment.mGeodatabase = mGeodatabase;
         ft.replace(R.id.mediaFragment, sourceFragment);
         ft.commit();
     }
@@ -407,7 +446,7 @@ public class ArActivity extends AppCompatActivity
     protected void displayAbout() {
         TransitionManager.beginDelayedTransition(transitionsContainer);
         ft = getSupportFragmentManager().beginTransaction();
-        aboutFragment = AboutFragment.newInstance();
+        aboutFragment = aboutFragment.newInstance();
         ft.replace(R.id.mediaFragment, aboutFragment);
         ft.commit();
     }
@@ -417,23 +456,30 @@ public class ArActivity extends AppCompatActivity
      */
     private void requestPermissions() {
         // define permission to request
-        String[] reqPermission = {
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        String[] reqPermission = {Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.CAMERA
-        };
+                Manifest.permission.CAMERA};
 
         statusChange();
-
         if (ContextCompat.checkSelfPermission(this, reqPermission[2])
                 == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, reqPermission[3])
                 == PackageManager.PERMISSION_GRANTED) {
+
             tryAR();
+
         } else {
             // request permission
             ActivityCompat.requestPermissions(this, reqPermission, 4);
+        }
+    }
+
+    private void getCoordinates() {
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED ) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    5000L, 5f, this);
         }
     }
 
@@ -441,11 +487,7 @@ public class ArActivity extends AppCompatActivity
      * Handle the permissions request response.
      */
     @Override
-    public void onRequestPermissionsResult(
-            int requestCode,
-            @NonNull String[] permissions,
-            @NonNull int[] grantResults
-    ) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,@NonNull int[] grantResults) {
         try {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 tryAR();
@@ -455,39 +497,9 @@ public class ArActivity extends AppCompatActivity
                         Toast.LENGTH_SHORT).show();
             }
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        } catch (NullPointerException e) {
+        }catch (NullPointerException e){
             Toast.makeText(this, getString(R.string.navigate_ar_permission_denied),
                     Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void tryAR() {
-        try {
-            SharedPreferences prefslayers = getSharedPreferences(PREFS, MODE_PRIVATE);
-            name_layer = String.valueOf(new JSONObject(prefslayers.getString(LAYER_PREFS, "")).get("name"));
-            SharedPreferences prefsoffline = getSharedPreferences(PREFS_OFFLINE + "_" + name_layer, MODE_PRIVATE);
-
-            if (Objects.equals(state, "EN LINEA")) {
-                generateAr();
-            } else if (Objects.equals(state, "SIN CONEXION") && prefsoffline.getAll().size() > 0) {
-                mArView.getSceneView().getGraphicsOverlays().remove(tubeOverlay);
-                renderDots();
-            }
-
-            getCoordinates();
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void getCoordinates() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    5000L, 5f, this);
         }
     }
 
@@ -501,8 +513,7 @@ public class ArActivity extends AppCompatActivity
         mScene = new ArcGISScene(Basemap.createImagery());
         mArView.getSceneView().setScene(mScene);
         // create and add an elevation surface to the scene
-        ArcGISTiledElevationSource elevationSource =
-                new ArcGISTiledElevationSource(getString(R.string.elevation_url));
+        ArcGISTiledElevationSource elevationSource = new ArcGISTiledElevationSource(getString(R.string.elevation_url));
         Surface elevationSurface = new Surface();
         elevationSurface.getElevationSources().add(elevationSource);
         mArView.getSceneView().getScene().setBaseSurface(elevationSurface);
@@ -551,6 +562,7 @@ public class ArActivity extends AppCompatActivity
         // disable touch interactions with the scene view
         mArView.getSceneView().setOnTouchListener((view, motionEvent) -> true);
 
+
     }
 
     private void renderDots() {
@@ -572,7 +584,8 @@ public class ArActivity extends AppCompatActivity
 
         // create a new polyline that represent the tubes
         PointCollection pointCollection = new PointCollection(SpatialReferences.getWgs84());
-        for (DotLocation dot : dotLocations) {
+        for (DotLocation dot : dotTubes) {
+
             Point point = new Point(dot.getLat(), dot.getLon(), dot.getAlt());
             sphereOverlay.getGraphics().add(new Graphic(point, sphere));
             pointCollection.add(point);
@@ -584,7 +597,7 @@ public class ArActivity extends AppCompatActivity
 
         // display the graphic above the ground
         LayerSceneProperties.SurfacePlacement sp = LayerSceneProperties.SurfacePlacement.ABSOLUTE;
-        if (dotLocations[0].getAlt() == 0) sp = LayerSceneProperties.SurfacePlacement.RELATIVE;
+        if (dotTubes[0].getAlt() == 0) sp = LayerSceneProperties.SurfacePlacement.RELATIVE;
         tubeOverlay.getSceneProperties().setSurfacePlacement(sp);
         sphereOverlay.getSceneProperties().setSurfacePlacement(sp);
 
@@ -599,11 +612,31 @@ public class ArActivity extends AppCompatActivity
 
     @Override
     protected void onPause() {
+
         sensorManager.unregisterListener(this);
         if (mArView != null) {
             mArView.stopTracking();
         }
         super.onPause();
+    }
+
+    private void tryAR() {
+        try {
+            SharedPreferences prefslayers = getSharedPreferences(PREFS, MODE_PRIVATE);
+            name_layer = String.valueOf(new JSONObject(prefslayers.getString(LAYER_PREFS, "")).get("name"));
+            SharedPreferences prefsoffline = getSharedPreferences(PREFS_OFFLINE + "_" + name_layer, MODE_PRIVATE);
+
+            if (Objects.equals(state, "EN LINEA")) {
+                generateAr();
+            } else if (Objects.equals(state, "SIN CONEXION") && prefsoffline.getAll().size() > 0) {
+                mArView.getSceneView().getGraphicsOverlays().remove(tubeOverlay);
+                renderDots();
+                generateAr();
+                getCoordinates();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -619,13 +652,14 @@ public class ArActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
+        statusChange();
         if (itemId == R.id.menu) {
             displayMenu();
             return true;
-        } else if (itemId == R.id.state) {
+        }else if (itemId == R.id.state) {
             statusChange();
             return true;
-        } else if (itemId == R.id.close) {
+        }else if (itemId == R.id.close) {
             closeMenu();
             return true;
         } else if (itemId == R.id.refresh) {
@@ -664,7 +698,10 @@ public class ArActivity extends AppCompatActivity
         }
 
         orientationProvider = new OrientationProvider(this.getWindowManager());
-        compassRepository = new CompassRepository();
+        if(compassRepository == null){
+            compassRepository = new CompassRepository();
+        }
+
     }
 
     @SuppressLint("DefaultLocale")
@@ -758,7 +795,9 @@ public class ArActivity extends AppCompatActivity
             float[] r = new float[9];
             float[] i = new float[9];
 
-            ChangeArOfflineView(sensorEvent);
+            if (Objects.equals(state, "SIN CONEXION")){
+                ChangeArOfflineView(sensorEvent);
+            }
 
             boolean success = SensorManager.getRotationMatrix(r, i, mGravity, mGeomagnetic);
             if (success) {
@@ -777,7 +816,6 @@ public class ArActivity extends AppCompatActivity
                 anim.setFillAfter(true);
 
                 ivCompass.startAnimation(anim);
-
             }
         }
     }
@@ -807,6 +845,7 @@ public class ArActivity extends AppCompatActivity
             arLabelView.setCompassData(compassData);
         }
     }
+
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {

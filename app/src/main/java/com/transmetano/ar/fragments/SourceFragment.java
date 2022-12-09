@@ -374,10 +374,7 @@ public class SourceFragment extends Fragment implements ProgressDialogFragment.O
                     bt_changes.setBackground(getContext().getDrawable(R.drawable.not_changes_f2));
 
                     tv_name.setOnClickListener(view -> {
-                        Log.d("ERROR 0.0", String.valueOf(mPortalItemList.get(finalI).getTitle()));
-
                         searchLayers(String.valueOf(mPortalItemList.get(finalI).getTitle()));
-
                         Toast.makeText(getContext(), "View", Toast.LENGTH_LONG).show();
                     });
 
@@ -479,7 +476,7 @@ public class SourceFragment extends Fragment implements ProgressDialogFragment.O
                 boolean file = new File(pathname).exists();
 
 
-                downloadPreplannedArea();
+                downloadPreplannedArea(pathname);
             } catch (InterruptedException | ExecutionException e) {
                 String error = "Failed to get the Preplanned Map Areas from the Offline Map Task.";
                 Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
@@ -501,7 +498,7 @@ public class SourceFragment extends Fragment implements ProgressDialogFragment.O
         }
     }
 
-    private void downloadPreplannedArea() {
+    private void downloadPreplannedArea(String pathname) {
         if (mSelectedPreplannedMapArea != null) {
             // create default download parameters from the offline map task
             ListenableFuture<DownloadPreplannedOfflineMapParameters> offlineMapParametersFuture = mOfflineMapTask
@@ -550,6 +547,14 @@ public class SourceFragment extends Fragment implements ProgressDialogFragment.O
                                             .append(table.getValue().getMessage()).append(". ");
                                 }
 
+                                File file = new File(mOfflineMapDirectory.getPath() + File.separator + mSelectedPreplannedMapArea.getPortalItem().getTitle());
+                                if (file.isDirectory()){
+                                    Toast.makeText(getContext(),"Eliminando archivos fallidos",Toast.LENGTH_LONG).show();
+                                    deleteRecursive(file);
+                                } else {
+                                    Toast.makeText(getContext(),"NO ES DIRECTORIO",Toast.LENGTH_LONG).show();
+                                }
+
                                 String error = "Descarga fallida";
                                 Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
                                 Log.e(TAG, error);
@@ -569,6 +574,16 @@ public class SourceFragment extends Fragment implements ProgressDialogFragment.O
             });
         }
     }
+
+    void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory())
+            for (File child : fileOrDirectory.listFiles())
+                deleteRecursive(child);
+        fileOrDirectory.delete();
+    }
+
+
+
 
     private void dismissDialog() {
         // dismiss progress dialog
